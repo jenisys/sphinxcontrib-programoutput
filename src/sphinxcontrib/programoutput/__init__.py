@@ -47,6 +47,14 @@ from docutils.parsers.rst.directives import flag, unchanged, nonnegative_int
 
 from sphinx.util import logging as sphinx_logging
 
+# -- EXTENSION: programoutput_use_ansi
+# Reenable support for sphinxcontrib-ansi
+try:
+    from sphinxcontrib import ansi as sphinxcontrib_ansi
+except ImportError:
+    sphinxcontrib_ansi = None
+# -- EXTENSION.END
+
 __version__ = '0.15.dev0'
 
 logger = sphinx_logging.getLogger('contrib.programoutput')
@@ -223,6 +231,10 @@ def run_programs(app, doctree):
     # is no longer available on PyPI, so we can't test that. And if we can't test it,
     # we can't support it.
     node_class = nodes.literal_block
+    # -- EXTENSION: programoutput_use_ansi
+    if sphinxcontrib_ansi and app.config.programoutput_use_ansi:
+        node_class = sphinxcontrib_ansi.ansi_literal_block
+    # -- EXTENSION.END
 
     cache = app.env.programoutput_cache
 
@@ -290,6 +302,9 @@ def init_cache(app):
 
 
 def setup(app):
+    # -- EXTENSION: programoutput_use_ansi
+    app.add_config_value('programoutput_use_ansi', False, 'env')
+    # -- EXTENSION.END
     app.add_config_value('programoutput_prompt_template',
                          '$ {command}\n{output}', 'env')
     app.add_directive('program-output', ProgramOutputDirective)
